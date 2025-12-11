@@ -27,19 +27,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract image tag details
-        id: image_vars
-        run: |
-          OWNER_LOWER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
-          REPO_NAME=$(basename "${GITHUB_REPOSITORY}")
-          REPO_LOWER=$(echo "${REPO_NAME}" | tr '[:upper:]' '[:lower:]')
+      - name: Get short commit hash
+        id: vars
+        run: echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-          SHORT_SHA=$(git rev-parse --short HEAD)
+      - name: Prepare Docker image name and tag
+        run: |
+          REPO_NAME_LOWERCASE=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          TAG_NAME=$(echo "${GITHUB_REF_NAME}" | tr '[:upper:]' '[:lower:]')
+          BUILD_TAG="${TAG_NAME}-${{ steps.vars.outputs.commit_hash }}-${GITHUB_RUN_NUMBER}"
+
+          echo "IMAGE_NAME=ghcr.io/${REPO_NAME_LOWERCASE}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${BUILD_TAG}" >> $GITHUB_ENV
+
+          echo "Generated Image Name: ${IMAGE_NAME}"
+          echo "Generated Image Tag:  ${IMAGE_TAG}"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          labels: commitHash=${{ steps.image_vars.outputs.SHORT_SHA }}
           push: true
+          labels: commitHash=${{ steps.vars.outputs.commit_hash }}
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
