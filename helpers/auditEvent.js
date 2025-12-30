@@ -24,9 +24,15 @@ let auditEventObject = {
         switch (url) {
             case '/discussion/v2/posts/:pid/vote': 
                 return { type: 'vote',name: 'Voted', };
+            case '/discussion/v3/posts/:pid/vote': 
+                return { type: 'vote',name: 'Voted', };
             case '/discussion/v2/topics': 
                 return { type: 'topicCreate',name: 'Topic created'};
+            case '/discussion/v3/topics': 
+                return { type: 'topicCreate',name: 'Topic created'};
             case '/discussion/v2/topics/:tid':
+                return { type: 'topicReply',name: 'Topic replied'};
+            case '/discussion/v3/topics/:tid':
                 return { type: 'topicReply',name: 'Topic replied'};
             case '/discussion/forum/v3/create':
                     return { type: 'enableDf', name: 'Enable Discussions'};       

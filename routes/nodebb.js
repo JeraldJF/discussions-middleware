@@ -1,7 +1,7 @@
 const proxyUtils = require('../proxy/proxyUtils.js')
 const proxy = require('express-http-proxy');
 const { NODEBB_SERVICE_URL, nodebb_api_slug, moderation_type } = require('../helpers/environmentVariablesHelper.js');
-let {  moderation_flag } = require('../helpers/environmentVariablesHelper.js');
+let { moderation_flag } = require('../helpers/environmentVariablesHelper.js');
 moderation_flag = moderation_flag === 'true' ? true : false;
 
 const { logger } = require('@project-sunbird/logger');
@@ -17,8 +17,8 @@ const nodebbServiceUrl = NODEBB_SERVICE_URL + nodebb_api_slug;
 const _ = require('lodash')
 
 var kafka;
-if(moderation_flag) {
-   kafka = require('./kafka');
+if (moderation_flag) {
+  kafka = require('./kafka');
 }
 
 let logObj = {
@@ -46,7 +46,7 @@ const premoderation = function (req, res, next) {
     let incomingUrl = req.path
     console.log(url.indexOf(incomingUrl))
     // console.log('headers====', req.headers)
-    if ( moderation_type === 'pre-moderation' && Object.keys(body) != 0 && url.indexOf(incomingUrl) != -1) {
+    if (moderation_type === 'pre-moderation' && Object.keys(body) != 0 && url.indexOf(incomingUrl) != -1) {
       kafka.produce(req, res)
     } else {
       next()
@@ -54,7 +54,7 @@ const premoderation = function (req, res, next) {
   } else {
     next()
   }
-  
+
 }
 app.use(premoderation)
 
@@ -133,6 +133,20 @@ app.delete(`${BASE_REPORT_URL}/v2/topics/:tid/tags`, proxyObject());
 app.put(`${BASE_REPORT_URL}/v2/topics/:tid/pin`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/topics/:tid/pin`, proxyObject());
 
+// mirror v3 write API endpoints (NodeBB core exposes /api/v3/*) so clients
+// using v3 paths are supported by the middleware as well
+app.post(`${BASE_REPORT_URL}/v3/topics`, proxyObject());
+app.post(`${BASE_REPORT_URL}/v3/topics/:tid`, proxyObject());
+app.post(`${BASE_REPORT_URL}/v3/topics/update/:tid`, proxyObjectForPutApi());
+app.delete(`${BASE_REPORT_URL}/v3/topics/:tid`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/topics/:tid/state`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/topics/:tid/follow`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/topics/:tid/follow`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/topics/:tid/tags`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/topics/:tid/tags`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/topics/:tid/pin`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/topics/:tid/pin`, proxyObject());
+
 // categories apis
 app.post(`${BASE_REPORT_URL}/v2/categories`, proxyObject());
 app.put(`${BASE_REPORT_URL}/v2/categories/:cid`, proxyObject());
@@ -142,6 +156,15 @@ app.delete(`${BASE_REPORT_URL}/v2/categories/:cid/state`, proxyObject());
 app.put(`${BASE_REPORT_URL}/v2/categories/:cid/privileges`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/categories/:cid/privileges`, proxyObject());
 
+// v3 category endpoints
+app.post(`${BASE_REPORT_URL}/v3/categories`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/categories/:cid`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/categories/:cid`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/categories/:cid/state`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/categories/:cid/state`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/categories/:cid/privileges`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/categories/:cid/privileges`, proxyObject());
+
 // groups apis 
 app.post(`${BASE_REPORT_URL}/v2/groups`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/groups/:slug`, proxyObject());
@@ -149,6 +172,14 @@ app.put(`${BASE_REPORT_URL}/v2/groups/:slug/membership`, proxyObject());
 app.put(`${BASE_REPORT_URL}/v2/groups/:slug/membership/:uid`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/groups/:slug/membership`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/groups/:slug/membership/:uid`, proxyObject());
+
+// v3 groups endpoints
+app.post(`${BASE_REPORT_URL}/v3/groups`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/groups/:slug`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/groups/:slug/membership`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/groups/:slug/membership/:uid`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/groups/:slug/membership`, proxyObject());
+app.delete(`${BASE_REPORT_URL}/v3/groups/:slug/membership/:uid`, proxyObject());
 
 
 // post apis 

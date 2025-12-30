@@ -7,7 +7,7 @@ moderation_flag = moderation_flag === 'true' ? true : false;
 exports.deleteTopic = async (req, body) => {
     try {
         // console.log(body, body.response)
-        const response = await axios.delete(`${nodebbServiceUrl}/v2/topics/${body.response}?_uid=1`, {
+        const response = await axios.delete(`${nodebbServiceUrl}/v3/topics/${body.response}?_uid=1`, {
             headers: { 'Authorization': 'Bearer ' + Authorization },
         })
         // console.log(response.body)
@@ -21,7 +21,7 @@ exports.deleteTopic = async (req, body) => {
 exports.createTopic = async (req, body) => {
     try {
         // console.log(body)
-        const response = await axios.post(`${nodebbServiceUrl}/v2/topics?_uid=${body._uid}`, body, {
+        const response = await axios.post(`${nodebbServiceUrl}/v3/topics?_uid=${body._uid}`, body, {
             headers: { 'Authorization': 'Bearer ' + Authorization },
         })
         // console.log(response.body)

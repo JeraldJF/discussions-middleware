@@ -41,10 +41,24 @@ let error_obj = {
  * adding athorization token in the headers 
 */
 const decorateRequestHeaders = function () {
-  return function (proxyReqOpts) {
+  return function (proxyReqOpts, srcReq) {
     // console.log("Before appending master token:", JSON.stringify(proxyReqOpts.headers))
     logger.info({ message: `adding headers in the request ${proxyReqOpts.path}` });
     proxyReqOpts.headers.Authorization = 'Bearer ' + Authorization;
+
+    // 🔍 ADDED: Log request details for debugging intermittent failures
+    if (proxyReqOpts.path.includes('/v2/topics/') && proxyReqOpts.method === 'POST') {
+      logger.info({
+        message: '===== MIDDLEWARE REQUEST DEBUG =====',
+        path: proxyReqOpts.path,
+        method: proxyReqOpts.method,
+        requestBody: srcReq ? srcReq.body : 'NO_SOURCE_REQ',
+        hasAuthorization: !!proxyReqOpts.headers.Authorization,
+        authTokenPreview: Authorization.substring(0, 30) + '...',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // console.log("After appending master token:", JSON.stringify(proxyReqOpts.headers))
     return proxyReqOpts;
   }
@@ -92,6 +106,18 @@ const handleSessionExpiry = (proxyRes, proxyResData, req, res, error, data) => {
     edata['message'] = `${req.originalUrl} failed`;
     edata.level = "ERROR";
     logger.info({ message: `${req.originalUrl} failed` });
+
+    // 🔍 ADDED: Log detailed error information for debugging
+    const nodebbResponse = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : 'NO_DATA';
+    logger.error({
+      message: '===== NODEBB ERROR RESPONSE =====',
+      url: req.originalUrl,
+      statusCode: proxyRes.statusCode,
+      nodebbResponse: nodebbResponse.substring(0, 500), // First 500 chars
+      errorType: error ? error.message : 'NO_ERROR_OBJECT',
+      timestamp: new Date().toISOString()
+    });
+
     logMessage(edata, req);
     const resCode = errorResponse(req, res, proxyRes, error);
     // logging the Error events
