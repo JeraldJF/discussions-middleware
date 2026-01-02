@@ -106,6 +106,7 @@ const handleSessionExpiry = (proxyRes, proxyResData, req, res, error, data) => {
     edata['message'] = `${req.originalUrl} failed`;
     edata.level = "ERROR";
     logger.info({ message: `${req.originalUrl} failed` });
+    logger.error
 
     // 🔍 ADDED: Log detailed error information for debugging
     const nodebbResponse = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : 'NO_DATA';

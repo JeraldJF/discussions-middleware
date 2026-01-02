@@ -319,8 +319,15 @@ function proxyObject() {
         if (proxyRes.statusCode === 404) {
           edata['message'] = `Request url ${req.originalUrl} not found`;
           logMessage(edata, req);
-          logger.info({ message: `${req.originalUrl} Not found ${data}` })
+          logger.error({
+            message: `NODEBB 404 response for ${req.originalUrl}`,
+            statusCode: proxyRes.statusCode,
+            responseBody: data,
+            headers: proxyRes.headers
+          });
+          // Log telemetry for the error response as well
           const resCode = proxyUtils.errorResponse(req, res, proxyRes, null);
+          telemetryHelper.logTelemetryErrorEvent(req, data, proxyResData, proxyRes, resCode);
           return resCode;
         } else {
           edata['message'] = `${req.originalUrl} successfull`;
@@ -333,11 +340,18 @@ function proxyObject() {
           return resCode;
         }
       } catch (err) {
-        console.log('catch', err)
+        // Detailed error logging for unexpected exceptions
+        logger.error({
+          message: 'Unhandled exception in proxy userResDecorator',
+          url: req.originalUrl,
+          error: err && (err.stack || err),
+          proxyResData: proxyResData ? proxyResData.toString('utf8') : null,
+          statusCode: proxyRes && proxyRes.statusCode
+        });
         edata['level'] = "Error";
         edata['message'] = `Error: ${err.message}, Url:  ${req.originalUrl}`;
         logMessage(edata, req);
-        logger.info({ message: `Error while htting the ${req.url}  ${err.message}` });
+        logger.info({ message: `Error while hitting ${req.url}  ${err.message}` });
         return proxyUtils.handleSessionExpiry(proxyRes, proxyResData, req, res, err);
       }
     }
@@ -379,21 +393,32 @@ function proxyObjectForPutApi() {
         if (proxyRes.statusCode === 404) {
           edata['message'] = `Request url ${req.originalUrl} not found`;
           logMessage(edata, req);
-          logger.info({ message: `${req.originalUrl} Not found ${data}` })
+          logger.error({
+            message: `NODEBB 404 response for ${req.originalUrl}`,
+            statusCode: proxyRes.statusCode,
+            responseBody: data,
+            headers: proxyRes.headers
+          });
           const resCode = proxyUtils.errorResponse(req, res, proxyRes, null);
-          // logging the Error events
-          telemetryHelper.logTelemetryErrorEvent(req, data, proxyResData, proxyRes, resCode)
-          return proxyUtils.errorResponse(req, res, proxyRes, null);
+          telemetryHelper.logTelemetryErrorEvent(req, data, proxyResData, proxyRes, resCode);
+          return resCode;
         } else {
           edata['message'] = `${req.originalUrl} successfull`;
           logMessage(edata, req);
           return proxyUtils.handleSessionExpiry(proxyRes, proxyResData, req, res, null, data);
         }
       } catch (err) {
+        logger.error({
+          message: 'Unhandled exception in proxy userResDecorator (PUT variant)',
+          url: req.originalUrl,
+          error: err && (err.stack || err),
+          proxyResData: proxyResData ? proxyResData.toString('utf8') : null,
+          statusCode: proxyRes && proxyRes.statusCode
+        });
         edata['level'] = "Error";
         edata['message'] = `Error: ${err.message}, Url:  ${req.originalUrl}`;
         logMessage(edata, req);
-        logger.info({ message: `Error while htting the ${req.url}  ${err.message}` });
+        logger.info({ message: `Error while hitting ${req.url}  ${err.message}` });
         return proxyUtils.handleSessionExpiry(proxyRes, proxyResData, req, res, err);
       }
     }
@@ -429,8 +454,14 @@ function proxyObjectWithoutAuth() {
         if (proxyRes.statusCode === 404) {
           edata['message'] = `Request url ${req.originalUrl} not found`;
           logMessage(edata, req);
-          logger.info({ message: `${req.originalUrl} Not found ${data}` })
+          logger.error({
+            message: `NODEBB 404 response for ${req.originalUrl}`,
+            statusCode: proxyRes.statusCode,
+            responseBody: data,
+            headers: proxyRes.headers
+          });
           const resCode = proxyUtils.errorResponse(req, res, proxyRes, null);
+          telemetryHelper.logTelemetryErrorEvent(req, data, proxyResData, proxyRes, resCode);
           return resCode;
         } else {
           edata['message'] = `${req.originalUrl} successfull`;
@@ -439,11 +470,17 @@ function proxyObjectWithoutAuth() {
           return resCode;
         }
       } catch (err) {
-        console.log('catch', err)
+        logger.error({
+          message: 'Unhandled exception in proxy userResDecorator (no-auth variant)',
+          url: req.originalUrl,
+          error: err && (err.stack || err),
+          proxyResData: proxyResData ? proxyResData.toString('utf8') : null,
+          statusCode: proxyRes && proxyRes.statusCode
+        });
         edata['level'] = "Error";
         edata['message'] = `Error: ${err.message}, Url:  ${req.originalUrl}`;
         logMessage(edata, req);
-        logger.info({ message: `Error while htting the ${req.url}  ${err.message}` });
+        logger.info({ message: `Error while hitting ${req.url}  ${err.message}` });
         return proxyUtils.handleSessionExpiry(proxyRes, proxyResData, req, res, err);
       }
     }
