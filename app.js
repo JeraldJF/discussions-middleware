@@ -20,6 +20,25 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(cors());
+
+// Temporary middleware: log incoming request URL, query and key headers
+app.use(function (req, res, next) {
+  try {
+    console.info('INCOMING_REQ', {
+      requestBody: req.body,
+      originalUrl: req.originalUrl,
+      query: req.query,
+      headers: {
+        'x-request-id': req.headers['x-request-id'],
+        'x-session-id': req.headers['x-session-id'],
+        'x-device-id': req.headers['x-device-id']
+      }
+    });
+  } catch (e) {
+    console.error('Error logging incoming request', e);
+  }
+  next();
+});
 app.all('/health', (req,res,next) => {
   res.send({statusCode: 200, message: "health api"})
 })
