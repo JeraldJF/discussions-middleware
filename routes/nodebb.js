@@ -173,7 +173,7 @@ app.delete(`${BASE_REPORT_URL}/v2/posts/:pid/state`, proxyObject());
 app.post(`${BASE_REPORT_URL}/v2/posts/:pid/vote`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/posts/:pid/vote`, proxyObject());
 // Support v3 vote API called by portal
-app.post(`${BASE_REPORT_URL}/v3/posts/:pid/vote`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/posts/:pid/vote`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v3/posts/:pid/vote`, proxyObject());
 app.post(`${BASE_REPORT_URL}/v2/posts/:pid/bookmark`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v2/posts/:pid/bookmark`, proxyObject());
@@ -182,7 +182,7 @@ app.post(`${BASE_REPORT_URL}/v3/posts/:pid`, isEditablePost(), proxyObjectForPut
 app.delete(`${BASE_REPORT_URL}/v3/posts/:pid`, isEditablePost(), proxyObject());
 app.put(`${BASE_REPORT_URL}/v3/posts/:pid/state`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v3/posts/:pid/state`, proxyObject());
-app.post(`${BASE_REPORT_URL}/v3/posts/:pid/bookmark`, proxyObject());
+app.put(`${BASE_REPORT_URL}/v3/posts/:pid/bookmark`, proxyObject());
 app.delete(`${BASE_REPORT_URL}/v3/posts/:pid/bookmark`, proxyObject());
 
 // util apis 
@@ -465,6 +465,9 @@ function logMessage(data, req) {
   logObj.edata = data;
   sbLogger.info(logObj);
 }
+
+// Catch-all fallback to proxy any unmatched routes
+app.all(`${BASE_REPORT_URL}/*`, proxyObject());
 
 module.exports = app;
 // module.exports.logMessage = logMessage;
