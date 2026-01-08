@@ -307,7 +307,7 @@ function proxyObject() {
       try {
         logger.info({ message: `request came from ${req.originalUrl}` })
         const data = proxyResData.toString('utf8');
-         if (proxyRes.statusCode === 404) {
+        if (proxyRes.statusCode === 404) {
           edata['message'] = `Request url ${req.originalUrl} not found`;
           logMessage(edata, req);
           logger.info({ message: `${req.originalUrl} Not found ${data}` })
