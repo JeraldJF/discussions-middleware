@@ -307,18 +307,7 @@ function proxyObject() {
       try {
         logger.info({ message: `request came from ${req.originalUrl}` })
         const data = proxyResData.toString('utf8');
-         if (proxyRes.statusCode === 302) {
-           // Log redirect target for debugging
-           logger.info({
-             message: `NODEBB 302 redirect for ${req.originalUrl}`,
-             statusCode: proxyRes.statusCode,
-             location: proxyRes.headers && proxyRes.headers.location,
-             headers: proxyRes.headers
-           });
-           edata['message'] = `Request url ${req.originalUrl} redirected to ${proxyRes.headers && proxyRes.headers.location}`;
-           logMessage(edata, req);
-           return proxyResData;
-         } else if (proxyRes.statusCode === 404) {
+         if (proxyRes.statusCode === 404) {
           edata['message'] = `Request url ${req.originalUrl} not found`;
           logMessage(edata, req);
           logger.info({ message: `${req.originalUrl} Not found ${data}` })
@@ -465,9 +454,6 @@ function logMessage(data, req) {
   logObj.edata = data;
   sbLogger.info(logObj);
 }
-
-// Catch-all fallback to proxy any unmatched routes
-app.all(`${BASE_REPORT_URL}/*`, proxyObject());
 
 module.exports = app;
 // module.exports.logMessage = logMessage;
